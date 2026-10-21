@@ -1,0 +1,23 @@
+Testes locais - 21/10/2026 America/Sao_Paulo
+Comando: python lab/app.py
+Login correto: True
+Senha incorreta: False
+Entrada de laboratório: True
+Comando: python app.py
+Login correto: True
+Senha incorreta: False
+Entrada de laboratório: False
+Comando: python -m unittest discover -s tests -v
+test_apostrophe_is_literal_data (test_login.LoginTests.test_apostrophe_is_literal_data) ... ok
+test_empty_input (test_login.LoginTests.test_empty_input) ... ok
+test_password_injection_is_rejected (test_login.LoginTests.test_password_injection_is_rejected) ... ok
+test_reproduce_original_bypass (test_login.LoginTests.test_reproduce_original_bypass) ... ok
+test_unknown_user (test_login.LoginTests.test_unknown_user) ... ok
+test_username_injection_is_rejected (test_login.LoginTests.test_username_injection_is_rejected) ... ok
+test_valid_credentials (test_login.LoginTests.test_valid_credentials) ... ok
+test_wrong_password (test_login.LoginTests.test_wrong_password) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.003s
+
+OK

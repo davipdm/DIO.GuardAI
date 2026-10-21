@@ -1,0 +1,46 @@
+Todos os quatro arquivos foram lidos; nenhum comando foi executado, sem acesso a rede/servidores.
+
+# Análise de vulnerabilidade — SQL Injection local
+
+**1. Contexto e escopo**
+- Autorização: dono do laboratório; SQLite `:memory:`; dados fictícios descartáveis; sem rede/exposição.
+- Ativos: `lab/app.py` (vulnerável) e `app.py` (corrigida); nenhum teste ou comando executado.
+- Exposição: processos locais apenas.
+
+**2. Evidência e causa**
+- `lab/app.py:15-17`: `query` é montada com f-string interpolando `username` e `password` diretamente no comando SQL.
+- `lab/app.py:19`: retorno é `fetchone() is not None` (bolleano).
+- `lab/app.py:27`: demonstra o payload `aluno' -- ` (com espaço após `--`, obrigatório no SQLite).
+- Fato: entrada do usuário é injetada como parte da instrução; hipótese: o `'` fecha o literal e `--` comentam o restante.
+
+**3. Classificação**
+- CWE: CWE-89 (SQL Injection) — neutralização inadequada de elementos especiais em comando SQL. CWE descreve fraquezas.
+- ATT&CK: **não aplicável**. T1190 exige exploração de aplicação exposta (sem rede/local aqui); T1078 não se aplica (burla de autenticação não comprova credenciais válidas). CWE (fraqueza), ATT&CK (comportamento de adversário) e CVE (identificador de versão) não são intercambiáveis.
+
+**4. Impacto**
+- Tríade: apenas confidencialidade da autenticação é violada (bypass); sem leitura de linhas. No laboratório, dados fictícios → **1 (baixo)**.
+- Sem extrapolação: a função retorna booleano; UNION para extrair dados não se aplica aqui, pois o resultado é descartado.
+
+**5. Probabilidade**
+- Condição específica (payload com `--`) + acesso local ao processo; exploração simples, mas sem exposição real. → **2 (média)**.
+- Produto 1×2 = **2 → Baixa** (escala do projeto, não CVSS).
+
+**6. Severidade**
+- **2 → Baixa**. Não é CVSS; escala interna do projeto. Pendente só se mudar o contexto.
+
+**7. Correção**
+- Menor mudança: query parametrizada com placeholders `?` e tupla de parâmetros (`app.py:5-7`). O driver trata os valores como literais; nenhum caractere tem interpretação SQL.
+- Efeito: autenticação legítima preservada; retorno booleano mantido.
+- Cuidados: escape/manual filter não substituem parâmetros; em produção, rever sessão, tentativas e privilégios. Corrigir o SQLi não torna o sistema seguro por si só.
+
+**8. Validação**
+- Comparação antes/depois (sem executar aqui): login correto verdadeiro; senha errada falsa; payload `aluno' -- ` falso após a correção.
+- Entrada inválida e casas de borda devem continuar retornando booleano.
+- Limites: teste local não prova exposição na internet; correção elimina o SQLi, mas não garante segurança geral.
+
+**Pontos essenciais**
+- A causa é a concatenação da entrada no comando SQL, não o conteúdo dos dados.
+- Bypass autentica "aluno" sem senha, sem demonstrar uso de credenciais válidas.
+- A correção paramétrica mantém a semântica booleana; não há extração de dados aqui.
+
+Pergunta: está claro que a correção elimina o SQLi preservando a interface booleana, e que o impacto no laboratório é baixo por causa dos dados fictícios?
